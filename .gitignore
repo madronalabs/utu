@@ -1,3 +1,11 @@
+# Reference
+_*
+
+# Temporaries
+*~
+*#
+build/
+
 # Prerequisites
 *.d
 
@@ -30,3 +38,7 @@
 *.exe
 *.out
 *.app
+
+# Misc
+.DS_Store
+
