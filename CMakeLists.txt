@@ -54,6 +54,13 @@ include(cmake/Conan.cmake)
 include(cmake/Vcpkg.cmake)
 
 #
+# Dependendencies
+#
+if(${PROJECT_NAME}_BUILD_EXECUTABLE)
+  add_subdirectory(dep/docopt)
+endif()
+
+#
 # Create library, setup header and source files
 #
 
@@ -62,6 +69,7 @@ include(cmake/SourcesAndHeaders.cmake)
 
 if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   add_executable(${PROJECT_NAME} ${exe_sources})
+  target_link_libraries(${PROJECT_NAME} docopt_s)
 
   if(${PROJECT_NAME}_VERBOSE_OUTPUT)
     verbose_message("Found the following sources:")
