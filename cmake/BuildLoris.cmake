@@ -2,6 +2,7 @@ include(ExternalProject)
 
 set(loris_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dep/loris)
 
+
 ExternalProject_Add(loris
     SOURCE_DIR ${loris_SOURCE_DIR}
     UPDATE_DISCONNECTED true # do not attempt to update source on rebuild
@@ -34,12 +35,16 @@ ExternalProject_Add_Step(loris
     WORKING_DIRECTORY ${SOURCE_DIR}
 )
 
+# HACK: create the install directories so that the target_include_directories function does not error during configure.
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/loris-prefix/include)  # avoid race condition
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/loris-prefix/lib)  # avoid race condition
+
 add_library(loris::loris INTERFACE IMPORTED GLOBAL)
 target_include_directories(loris::loris INTERFACE
-    ${PROJECT_BINARY_DIR}/loris-prefix/include
+    "${PROJECT_BINARY_DIR}/loris-prefix/include"
 )
 target_link_libraries(loris::loris INTERFACE
-    ${PROJECT_BINARY_DIR}/loris-prefix/lib/${CMAKE_STATIC_LIBRARY_PREFIX}loris${CMAKE_STATIC_LIBRARY_SUFFIX}
+    "${PROJECT_BINARY_DIR}/loris-prefix/lib/${CMAKE_STATIC_LIBRARY_PREFIX}loris${CMAKE_STATIC_LIBRARY_SUFFIX}"
 )
 # set_target_properties didn't work, but target_link_libraries did work
 
