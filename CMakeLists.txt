@@ -65,16 +65,34 @@ endif()
 # loris
 include(cmake/BuildLoris.cmake)
 
+# nlohmann json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(dep/json)
+
 #
 # Create library, setup header and source files
 #
+
+set(exe_dependencies
+  docopt_s
+  loris::loris
+)
+
+set(lib_dependencies
+  loris::loris
+  nlohmann_json::nlohmann_json
+)
+
+set(test_dependencies
+  ${lib_dependencies}
+)
 
 # Find all headers and implementation files
 include(cmake/SourcesAndHeaders.cmake)
 
 if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   add_executable(${PROJECT_NAME} ${exe_sources})
-  target_link_libraries(${PROJECT_NAME} docopt_s loris::loris)
+  target_link_libraries(${PROJECT_NAME} ${exe_dependencies})
 
   if(${PROJECT_NAME}_VERBOSE_OUTPUT)
     verbose_message("Found the following sources:")
@@ -85,7 +103,7 @@ if(${PROJECT_NAME}_BUILD_EXECUTABLE)
 
   if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
     add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
-    target_link_libraries(${PROJECT_NAME}_LIB loris::loris)
+    target_link_libraries(${PROJECT_NAME}_LIB ${lib_dependencies})
 
     if(${PROJECT_NAME}_VERBOSE_OUTPUT)
       verbose_message("Found the following headers:")

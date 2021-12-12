@@ -4,3 +4,6 @@
 [submodule "dep/loris"]
 	path = dep/loris
 	url = ssh://git@github.com/ngwese/loris.git
+[submodule "dep/json"]
+	path = dep/json
+	url = https://github.com/nlohmann/json.git
