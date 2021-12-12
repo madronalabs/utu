@@ -1,3 +1,6 @@
 [submodule "dep/docopt"]
 	path = dep/docopt
 	url = https://github.com/docopt/docopt.cpp.git
+[submodule "dep/loris"]
+	path = dep/loris
+	url = ssh://git@github.com/ngwese/loris.git

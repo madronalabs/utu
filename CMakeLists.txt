@@ -56,9 +56,14 @@ include(cmake/Vcpkg.cmake)
 #
 # Dependendencies
 #
+
+# docopt
 if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   add_subdirectory(dep/docopt)
 endif()
+
+# loris
+include(cmake/BuildLoris.cmake)
 
 #
 # Create library, setup header and source files
@@ -69,7 +74,7 @@ include(cmake/SourcesAndHeaders.cmake)
 
 if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   add_executable(${PROJECT_NAME} ${exe_sources})
-  target_link_libraries(${PROJECT_NAME} docopt_s)
+  target_link_libraries(${PROJECT_NAME} docopt_s loris::loris)
 
   if(${PROJECT_NAME}_VERBOSE_OUTPUT)
     verbose_message("Found the following sources:")
@@ -80,6 +85,7 @@ if(${PROJECT_NAME}_BUILD_EXECUTABLE)
 
   if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
     add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
+    target_link_libraries(${PROJECT_NAME}_LIB loris::loris)
 
     if(${PROJECT_NAME}_VERBOSE_OUTPUT)
       verbose_message("Found the following headers:")
@@ -157,7 +163,7 @@ verbose_message("Applied compiler warnings. Using standard ${CMAKE_CXX_STANDARD}
 # Enable Doxygen
 #
 
-#include(cmake/Doxygen.cmake)
+include(cmake/Doxygen.cmake)
 
 #
 # Model project dependencies
