@@ -18,12 +18,12 @@ using Args = std::map<std::string, docopt::value>;
 
 std::optional<double> vtod(const docopt::value& v) noexcept;
 
-template<typename T>
-T check(std::optional<T> n, T minimum, std::string message);
-template<typename T>
-T check(std::optional<T> n, T minimum, T maximum, std::string message);
-template<typename T, typename Predicate>
-T check(std::optional<T> n, Predicate predicate, std::string message);
+template <typename T, typename Predicate>
+T check(std::optional<T> n, Predicate predicate, const char* message);
+template <typename T>
+T checkRangeInclusive(std::optional<T> n, T minimum, T maximum, const char* message);
+template <typename T>
+T checkAboveZero(std::optional<T> n, const char* message);
 
 int AnalyzeCommand(Args& args);
 int SynthCommand(Args& args);
@@ -46,9 +46,9 @@ static const char USAGE[] =
       --freq-res=<res_hz>          minimum instantaneous frequency
                                    difference [default: 332]
       --freq-drift=<drift_hz>      maximum allowable frequency difference
-                                   between consecutive breakpoints
+                                   between consecutive breakpoints [default: 30]
       --freq-floor=<floor_hz>      minimum instantaneous partial frequency
-      --amp-floor=<floor_db>       lowest detected spectral amplitude
+      --amp-floor=<floor_db>       lowest detected spectral amplitude [default: -90]
       --crop-time=<ct>
       --hop-time=<ht>              approximate average density of breakpoints
       --lobe-level=<lobe_db>       sidelobe attenuation level for Kaiser analysis
@@ -87,13 +87,60 @@ int AnalyzeCommand(Args& args)
   auto sourcePath = args["<audio_file>"].asString();
   Loris::AiffFile f(sourcePath);
 
-  double resolutionHz = check(vtod(args["--freq-res"]), [](const double& v) { return v > 0; }, "--freq-res must be greater than 0");
-
+  double resolutionHz =
+      checkAboveZero(vtod(args["--freq-res"]), "--freq-res must be greater than 0");
   double windowWidthHz = vtod(args["--window-width"]).value();
 
   Loris::Analyzer a(resolutionHz, windowWidthHz);
-  a.setFreqDrift(30);
-  a.setAmpFloor(-90);
+
+  //
+  // configure analysis options
+  //
+
+  auto freqDrift = args["--freq-drift"];
+  if (freqDrift)
+  {
+    a.setFreqDrift(checkAboveZero(vtod(freqDrift), "--freq-drift must be greater than 0"));
+  }
+
+  auto freqFloor = args["--freq-floor"];
+  if (freqFloor)
+  {
+    a.setFreqFloor(checkAboveZero(vtod(freqFloor), "--freq-floor must be greater than 0"));
+  }
+
+  auto ampFloor = args["--amp-floor"];
+  if (ampFloor)
+  {
+    a.setAmpFloor(vtod(ampFloor).value());
+  }
+
+  auto hopTime = args["--hop-time"];
+  if (hopTime)
+  {
+    a.setHopTime(vtod(hopTime).value());
+  }
+
+  auto cropTime = args["--crop-time"];
+  if (cropTime)
+  {
+    a.setCropTime(vtod(cropTime).value());
+  }
+
+  auto lobeLevel = args["--lobe-level"];
+  if (lobeLevel)
+  {
+    a.setSidelobeLevel(vtod(lobeLevel).value());
+  }
+
+  if (args["--no-phase-correct"])
+  {
+    a.setPhaseCorrect(false);
+  }
+
+  //
+  // perform analysis
+  //
 
   Loris::PartialList partials = a.analyze(f.samples(), f.sampleRate());
   Loris::FrequencyReference partialsRef(partials.begin(), partials.end(), 415 * 0.8, 415 * 1.2, 50);
@@ -101,6 +148,10 @@ int AnalyzeCommand(Args& args)
   Loris::Distiller::distill(partials, 0.001);
 
   std::cout << "Partial count: " << partials.size() << std::endl;
+
+  //
+  // output results
+  //
 
   docopt::value outputPath = args["--output"];
   if (outputPath)
@@ -112,47 +163,50 @@ int AnalyzeCommand(Args& args)
   return 0;
 }
 
-int SynthCommand(Args& args) {
+int SynthCommand(Args& args)
+{
   auto partialPath = args["<sdif>"].asString();
 
   return 0;
 }
 
-std::optional<double> vtod(const docopt::value& v) noexcept {
-  try {
+std::optional<double> vtod(const docopt::value& v) noexcept
+{
+  try
+  {
     return std::stod(v.asString());
-  } catch (...) {}
+  }
+  catch (...)
+  {
+  }
   return {};
 }
 
-template<typename T>
-T check(std::optional<T> n, T minimum, std::string message)
+template <typename T, typename Predicate>
+T check(std::optional<T> n, Predicate predicate, const char* message)
 {
-  if (n && n.value() >= minimum) {
+  if (n && predicate(n.value()))
+  {
     return n.value();
   }
-
   std::cerr << message << std::endl;
   exit(-1);
 }
 
-template<typename T>
-T check(std::optional<T> n, T minimum, T maximum, std::string message)
+template <typename T>
+T checkRangeInclusive(std::optional<T> n, T minimum, T maximum, const char* message)
 {
-  if (n && n.value() >= minimum && n.value() <= maximum) {
+  if (n && n.value() >= minimum && n.value() <= maximum)
+  {
     return n.value();
   }
   std::cerr << message << std::endl;
   exit(-1);
-
 }
 
-template<typename T, typename Predicate>
-T check(std::optional<T> n, Predicate predicate, std::string message)
+template <typename T>
+T checkAboveZero(std::optional<T> n, const char* message)
 {
-  if (n && predicate(n.value())) {
-    return n.value();
-  }
-  std::cerr << message << std::endl;
-  exit(-1);
+  return check(
+      n, [](const T& v) { return v > 0; }, message);
 }
