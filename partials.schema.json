@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://raw.githubusercontent.com/ngwese/utu/main/partials.schema.json",
+    "title": "utu sample analysis output",
+    "description": "",
+    "type": "object",
+    "properties": {
+        "file_info": {
+            "description": "file format metadata",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            },
+            "required": ["kind", "version"]
+        },
+        "source": {
+            "description": "",
+            "type": "object",
+            "properties": {
+                "location": {
+                    "description": "Path/URL to the audio file that was the subject of analysis",
+                    "type": "string"
+                },
+                "fingerprint": {
+                    "description": "The sha256 fingerprint of the file which was analyzed",
+                    "type": "string"
+                }
+            },
+            "required": ["location"]
+        },
+        "parameters": {
+            "description": "Analysis parameters used to compute partials",
+            "type": "object"
+        },
+        "layout": {
+            "description": "Describes the name and order of parameters recorded for each breakpoint",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 2,
+            "uniqueItems": true
+        },
+        "partials": {
+            "description": "Array of partials",
+            "type": "array",
+            "items": {
+                "description": "A partial",
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "breakpoints": {
+                        "description": "Breakpoints for a given partial",
+                        "type": "array",
+                        "items": {
+                            "description": "Parameters for a given breakpoint",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "required": ["breakpoints"]
+            }
+        }
+    },
+    "required": [ "file_info", "layout", "partials" ]
+}

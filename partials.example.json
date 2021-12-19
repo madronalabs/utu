@@ -1,0 +1,30 @@
+{
+    "file_info": {
+        "kind": "utu-partial-data",
+        "version": 1
+    },
+    "source": {
+        "location": "/some/path/on/disk.aiff"
+    },
+    "layout": ["time", "frequency", "amplitude", "bandwidth", "phase"],
+    "partials": [
+        {
+            "label": "component-1",
+            "breakpoints": [
+                [0, 440, 0.3, 0.2, 0],
+                [0.2, 440, 0.3, 0.2, 0],
+                [0.5, 440, 0.3, 0.2, 0],
+                [1.5, 440, 0.3, 0.2, 0],
+                [3.0, 440, 0.3, 0.2, 0]
+            ]
+        },
+        {
+            "label": "component-2",
+            "breakpoints": [
+                [0.3, 440, 0.3, 0.2, 0],
+                [3.0, 440, 0.3, 0.2, 0],
+                [4.2, 440, 0.3, 0.2, 0]
+            ]
+        }
+    ]
+}
