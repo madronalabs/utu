@@ -18,23 +18,27 @@
             },
             "required": ["kind", "version"]
         },
+        "description": {
+            "description": "Optional description of the analysis data",
+            "type": "string"
+        },
         "source": {
-            "description": "",
+            "description": "Optional details on the audio data which was analyzed",
             "type": "object",
             "properties": {
                 "location": {
-                    "description": "Path/URL to the audio file that was the subject of analysis",
+                    "description": "Path/URL to the source audio file",
                     "type": "string"
                 },
                 "fingerprint": {
-                    "description": "The sha256 fingerprint of the file which was analyzed",
+                    "description": "Optional sha256 fingerprint of the file which was analyzed",
                     "type": "string"
                 }
             },
             "required": ["location"]
         },
         "parameters": {
-            "description": "Analysis parameters used to compute partials",
+            "description": "Optional analysis parameters used to compute partials",
             "type": "object"
         },
         "layout": {
