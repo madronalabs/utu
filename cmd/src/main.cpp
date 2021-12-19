@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2021 Greg Wuller.
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+
 #include <docopt.h>
 #include <loris/AiffFile.h>
 #include <loris/Analyzer.h>
