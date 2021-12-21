@@ -1,8 +1,5 @@
 #pragma once
 
-namespace utu
-{
-
-void herald();
-
-}  // namespace utu
+#include <utu/Partial.h>
+#include <utu/PartialData.h>
+#include <utu/PartialReader.h>

@@ -1,5 +1,5 @@
 set(sources
-  src/dummy.cpp
+  src/PartialReader.cpp
 )
 
 set(exe_sources
@@ -9,8 +9,12 @@ set(exe_sources
 
 set(headers
     include/utu/utu.h
+    include/utu/Partial.h
+    include/utu/PartialData.h
+    include/utu/PartialReader.h
+    src/SerializerImpl.h
 )
 
 set(test_sources
-  src/test_io.cpp
+  src/test_json.cpp
 )

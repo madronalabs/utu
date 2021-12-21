@@ -69,6 +69,10 @@ include(cmake/BuildLoris.cmake)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(dep/json)
 
+# gtest
+add_subdirectory(dep/googletest)
+
+
 #
 # Create library, setup header and source files
 #
@@ -76,6 +80,7 @@ add_subdirectory(dep/json)
 set(exe_dependencies
   docopt_s
   loris::loris
+  nlohmann_json::nlohmann_json
 )
 
 set(lib_dependencies
@@ -240,6 +245,9 @@ else()
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    # Adds project internal source to include path if target has utu_INTERNAL property set to true
+    # https://stackoverflow.com/questions/54652349/how-to-unit-test-private-features-of-library-tdd-with-cmake
+    $<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:${PROJECT_NAME}_INTERNAL>>:${CMAKE_CURRENT_SOURCE_DIR}/src>>
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
@@ -250,6 +258,8 @@ else()
       $<INSTALL_INTERFACE:include>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+      # Adds project internal source to include path if target has PROJECT_INTERNAL property set to true
+      $<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:${PROJECT_NAME}_INTERNAL>>:${CMAKE_CURRENT_SOURCE_DIR}/src>>
       PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/src
     )

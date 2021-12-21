@@ -43,17 +43,24 @@ foreach(file ${test_sources})
   endif()
 
   if(${CMAKE_PROJECT_NAME}_USE_GTEST)
-    find_package(GTest REQUIRED)
+    # NOTE: googletest is added directly as a subdirectory for avoid the need to
+    # install, commenting out the find_package call as a result.
+    #
+    # find_package(GTest REQUIRED)
 
     if(${CMAKE_PROJECT_NAME}_USE_GOOGLE_MOCK)
       set(GOOGLE_MOCK_LIBRARIES GTest::gmock GTest::gmock_main)
     endif()
 
+    # NOTE: this treats tests as project internal and allows access to private headers
+    set_property(TARGET ${test_name}_Tests PROPERTY ${CMAKE_PROJECT_NAME}_INTERNAL 1)
+
     target_link_libraries(
       ${test_name}_Tests
       PUBLIC
-        GTest::GTest
-        GTest::Main
+        # GTest::GTest
+        # GTest::Main
+        gtest_main
         ${GOOGLE_MOCK_LIBRARIES}
         ${${CMAKE_PROJECT_NAME}_TEST_LIB}
     )
