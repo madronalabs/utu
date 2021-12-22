@@ -16,10 +16,8 @@
 namespace utu
 {
 
-struct PartialData
-{
-  struct Source
-  {
+struct PartialData {
+  struct Source {
     std::string location;
     std::optional<std::string> fingerprint;
   };
@@ -33,10 +31,8 @@ struct PartialData
   bool push_back(Partial&& partial)
   {
     // Ensure the incoming partial has all the expected parameters
-    for (const auto& param : parameters)
-    {
-      if (partial.envelopes.find(param) == partial.envelopes.end())
-      {
+    for (const auto& param : parameters) {
+      if (partial.envelopes.find(param) == partial.envelopes.end()) {
         return false;
       }
     }

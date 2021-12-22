@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
-#include <nlohmann/json.hpp>
-
 #include <utu/PartialReader.h>
+
+#include <nlohmann/json.hpp>
 
 #include "SerializerImpl.h"
 

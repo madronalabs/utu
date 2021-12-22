@@ -76,12 +76,9 @@ int main(int argc, const char** argv)
   }
 #endif
 
-  if (args["analyze"])
-  {
+  if (args["analyze"]) {
     return AnalyzeCommand(args);
-  }
-  else if (args["synth"])
-  {
+  } else if (args["synth"]) {
     return SynthCommand(args);
   }
 
@@ -104,43 +101,36 @@ int AnalyzeCommand(Args& args)
   //
 
   auto freqDrift = args["--freq-drift"];
-  if (freqDrift)
-  {
+  if (freqDrift) {
     a.setFreqDrift(checkAboveZero(vtod(freqDrift), "--freq-drift must be greater than 0"));
   }
 
   auto freqFloor = args["--freq-floor"];
-  if (freqFloor)
-  {
+  if (freqFloor) {
     a.setFreqFloor(checkAboveZero(vtod(freqFloor), "--freq-floor must be greater than 0"));
   }
 
   auto ampFloor = args["--amp-floor"];
-  if (ampFloor)
-  {
+  if (ampFloor) {
     a.setAmpFloor(vtod(ampFloor).value());
   }
 
   auto hopTime = args["--hop-time"];
-  if (hopTime)
-  {
+  if (hopTime) {
     a.setHopTime(vtod(hopTime).value());
   }
 
   auto cropTime = args["--crop-time"];
-  if (cropTime)
-  {
+  if (cropTime) {
     a.setCropTime(vtod(cropTime).value());
   }
 
   auto lobeLevel = args["--lobe-level"];
-  if (lobeLevel)
-  {
+  if (lobeLevel) {
     a.setSidelobeLevel(vtod(lobeLevel).value());
   }
 
-  if (args["--no-phase-correct"])
-  {
+  if (args["--no-phase-correct"]) {
     a.setPhaseCorrect(false);
   }
 
@@ -160,8 +150,7 @@ int AnalyzeCommand(Args& args)
   //
 
   docopt::value outputPath = args["--output"];
-  if (outputPath)
-  {
+  if (outputPath) {
     Loris::SdifFile::Export(outputPath.asString(), partials);
     std::cout << "Wrote: " << outputPath << std::endl;
   }
@@ -178,12 +167,9 @@ int SynthCommand(Args& args)
 
 std::optional<double> vtod(const docopt::value& v) noexcept
 {
-  try
-  {
+  try {
     return std::stod(v.asString());
-  }
-  catch (...)
-  {
+  } catch (...) {
   }
   return {};
 }
@@ -191,8 +177,7 @@ std::optional<double> vtod(const docopt::value& v) noexcept
 template <typename T, typename Predicate>
 T check(std::optional<T> n, Predicate predicate, const char* message)
 {
-  if (n && predicate(n.value()))
-  {
+  if (n && predicate(n.value())) {
     return n.value();
   }
   std::cerr << message << std::endl;
@@ -202,8 +187,7 @@ T check(std::optional<T> n, Predicate predicate, const char* message)
 template <typename T>
 T checkRangeInclusive(std::optional<T> n, T minimum, T maximum, const char* message)
 {
-  if (n && n.value() >= minimum && n.value() <= maximum)
-  {
+  if (n && n.value() >= minimum && n.value() <= maximum) {
     return n.value();
   }
   std::cerr << message << std::endl;

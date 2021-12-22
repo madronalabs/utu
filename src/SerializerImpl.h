@@ -4,21 +4,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
-#include <nlohmann/json.hpp>
-
 #include <utu/PartialReader.h>
+
+#include <nlohmann/json.hpp>
 
 namespace utu
 {
-struct FileInfo
-{
+struct FileInfo {
   std::string kind;
   uint16_t version;
 
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(FileInfo, kind, version)
 };
 }  // namespace utu
-
 
 //
 // JSON serialize/deserialize helpers, implemented here to above exposing the
@@ -30,15 +28,13 @@ struct FileInfo
 namespace nlohmann
 {
 
-template<typename T>
-struct adl_serializer<std::optional<T>>
-{
+template <typename T>
+struct adl_serializer<std::optional<T>> {
   static void to_json(json& j, const std::optional<T>& v)
   {
     if (v) {
       j = *v;
-    }
-    else {
+    } else {
       j = nullptr;
     }
   }
@@ -54,12 +50,10 @@ struct adl_serializer<std::optional<T>>
 };
 
 template <>
-struct adl_serializer<utu::Partial>
-{
+struct adl_serializer<utu::Partial> {
   static void to_json(json& j, const utu::Partial& p)
   {
-    if (p.label)
-    {
+    if (p.label) {
       j["label"] = *p.label;
     }
     j["envelopes"] = p.envelopes;
@@ -74,13 +68,11 @@ struct adl_serializer<utu::Partial>
 };
 
 template <>
-struct adl_serializer<utu::PartialData::Source>
-{
+struct adl_serializer<utu::PartialData::Source> {
   static void to_json(json& j, const utu::PartialData::Source& s)
   {
     j["location"] = s.location;
-    if (s.fingerprint)
-    {
+    if (s.fingerprint) {
       j["fingerprint"] = *s.fingerprint;
     }
   }
@@ -93,16 +85,13 @@ struct adl_serializer<utu::PartialData::Source>
 };
 
 template <>
-struct adl_serializer<utu::PartialData>
-{
+struct adl_serializer<utu::PartialData> {
   static void to_json(json& j, const utu::PartialData& d)
   {
-    if (d.description)
-    {
+    if (d.description) {
       j["description"] = *d.description;
     }
-    if (d.source)
-    {
+    if (d.source) {
       j["source"] = *d.source;
     }
     j["parameters"] = d.parameters;

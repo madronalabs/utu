@@ -14,8 +14,7 @@
 namespace utu
 {
 
-struct PartialReader
-{
+struct PartialReader {
   static std::optional<PartialData> read(const std::string& jsonData);
 };
 
