@@ -19,7 +19,7 @@ struct FileInfo {
 }  // namespace utu
 
 //
-// JSON serialize/deserialize helpers, implemented here to above exposing the
+// JSON serialize/deserialize helpers, implemented here to avoid exposing the
 // chosen JSON library to API consumers and to speed compilation.
 //
 // https://json.nlohmann.me/features/arbitrary_types/#how-do-i-convert-third-party-types
