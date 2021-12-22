@@ -15,21 +15,19 @@ namespace utu
 
 using json = nlohmann::json;
 
-PartialData&& PartialReader::read(const std::string& jsonData)
+std::optional<PartialData> PartialReader::read(const std::string& jsonData)
 {
   json j = json::parse(jsonData, nullptr, false /* allow exceptions */, true /* allow comments */);
 
   FileInfo info = j["file_info"].get<FileInfo>();
-  // TODO: validate header
 
-  PartialData data{
-      j["description"].get<std::optional<std::string>>(),
-      j["source"].get<std::optional<PartialData::Source>>(),
-      j["parameters"].get<std::vector<std::string>>(),
-      j["partials"].get<std::vector<Partial>>()
-  };
+  // TODO: validate header and choose the appropriate version of the PartialData
+  // structure to read.
 
-  return std::move(data);
+  PartialData data = j;
+  std::optional<PartialData> result(std::move(data));
+
+  return result;
 }
 
 }  // namespace utu

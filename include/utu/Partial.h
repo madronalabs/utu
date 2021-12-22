@@ -16,7 +16,8 @@ namespace utu
 
 struct Partial
 {
-  using Envelopes = std::unordered_map<std::string, std::vector<double>>;
+  using Envelope = std::vector<double>;
+  using Envelopes = std::unordered_map<std::string, Envelope>;
 
   std::optional<std::string> label;
   Envelopes envelopes;

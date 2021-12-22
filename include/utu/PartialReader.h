@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "utu/PartialData.h"
@@ -15,7 +16,7 @@ namespace utu
 
 struct PartialReader
 {
-  PartialData&& read(const std::string& jsonData);
+  static std::optional<PartialData> read(const std::string& jsonData);
 };
 
 }  // namespace utu
