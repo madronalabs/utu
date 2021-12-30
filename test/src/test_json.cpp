@@ -3,7 +3,7 @@
 
 #include <utu/Partial.h>
 #include <utu/PartialData.h>
-#include <utu/PartialReader.h>
+#include <utu/PartialIO.h>
 
 #include "SerializerImpl.h"
 

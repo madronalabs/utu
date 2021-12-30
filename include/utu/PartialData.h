@@ -17,6 +17,9 @@ namespace utu
 {
 
 struct PartialData {
+  using Parameters = std::vector<std::string>;
+  using Partials = std::vector<Partial>;
+
   struct Source {
     std::string location;
     std::optional<std::string> fingerprint;
@@ -25,10 +28,10 @@ struct PartialData {
   std::optional<std::string> description;
   std::optional<Source> source;
 
-  std::vector<std::string> parameters;
-  std::vector<Partial> partials;
+  Parameters parameters;
+  Partials partials;
 
-  bool push_back(Partial&& partial)
+  bool push_back(Partial& partial)
   {
     // Ensure the incoming partial has all the expected parameters
     for (const auto& param : parameters) {

@@ -1,8 +1,9 @@
 set(sources
-  src/PartialReader.cpp
+  src/PartialIO.cpp
 )
 
 set(exe_sources
+    cmd/src/Marshal.cpp
 		cmd/src/main.cpp
 		${sources}
 )
@@ -11,7 +12,7 @@ set(headers
     include/utu/utu.h
     include/utu/Partial.h
     include/utu/PartialData.h
-    include/utu/PartialReader.h
+    include/utu/PartialIO.h
     src/SerializerImpl.h
 )
 

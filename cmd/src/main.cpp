@@ -12,13 +12,16 @@
 #include <loris/FrequencyReference.h>
 #include <loris/PartialList.h>
 #include <loris/SdifFile.h>
+#include <utu/utu.h>
+#include <utu/version.h>
 
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <optional>
 #include <string>
 
-#include "utu/utu.h"
-#include "utu/version.h"
+#include "Marshal.h"
 
 using Args = std::map<std::string, docopt::value>;
 
@@ -151,8 +154,16 @@ int AnalyzeCommand(Args& args)
 
   docopt::value outputPath = args["--output"];
   if (outputPath) {
-    Loris::SdifFile::Export(outputPath.asString(), partials);
-    std::cout << "Wrote: " << outputPath << std::endl;
+    utu::PartialData data = Marshal::from(partials);
+    data.source = utu::PartialData::Source({std::filesystem::canonical(sourcePath), {}});
+
+    if (outputPath.asString() == "-") {
+      utu::PartialWriter::write(data, std::cout);
+    } else {
+      std::ofstream os(outputPath.asString(), std::ios::binary);
+      utu::PartialWriter::write(data, os);
+      std::cout << "Wrote: " << outputPath << std::endl;
+    }
   }
 
   return 0;
