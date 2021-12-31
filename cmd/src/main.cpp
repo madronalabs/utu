@@ -41,17 +41,18 @@ static const char USAGE[] =
     R"(utu
 
     Usage:
-      utu analyze <audio_file> [options] [--output=<partial_file>]
-      utu synth <partials_file>
+      utu analyze <audio_file> [options] [--output=<file>]
+      utu synth <partial_file> [options] [--output=<file>]
       utu (-h | --help)
       utu --version
 
     General Options:
-      -h --help     Show this screen.
-      --version     Show version.
+      -o, --output=<file>          write analysis/synthesis result
+      -h --help                    Show this screen.
+      --quiet                      Suppress normal output.
+      --version                    Show version.
 
     Analyze Options:
-      -o, --output=<partial_file>  write analysis result
       --freq-res=<res_hz>          minimum instantaneous frequency
                                    difference [default: 332]
       --freq-drift=<drift_hz>      maximum allowable frequency difference
@@ -64,6 +65,10 @@ static const char USAGE[] =
                                    window in positive dB
       --window-width=<win_hz>      frequency domain lobe width [default: 664]
       --no-phase-correct
+
+    Synth Options:
+      --pitch-shift=<cents>        shift the pitch partials [default: 0]
+      --sample-rate=<rate>         sample rate [default: 44100]
 )";
 
 int main(int argc, const char** argv)
@@ -79,9 +84,9 @@ int main(int argc, const char** argv)
   }
 #endif
 
-  if (args["analyze"]) {
+  if (args["analyze"].asBool()) {
     return AnalyzeCommand(args);
-  } else if (args["synth"]) {
+  } else if (args["synth"].asBool()) {
     return SynthCommand(args);
   }
 
@@ -90,14 +95,23 @@ int main(int argc, const char** argv)
 
 int AnalyzeCommand(Args& args)
 {
-  auto sourcePath = args["<audio_file>"].asString();
+  std::string sourcePath = args["<audio_file>"].asString();
   Loris::AiffFile f(sourcePath);
+
+  bool quietOutput = args["--quiet"].asBool();
+
+  docopt::value outputPath = args["--output"];
+  if (outputPath && outputPath.asString() == "-") {
+    // if writing to std::out suppress any logging
+    quietOutput = true;
+  }
 
   double resolutionHz =
       checkAboveZero(vtod(args["--freq-res"]), "--freq-res must be greater than 0");
   double windowWidthHz = vtod(args["--window-width"]).value();
 
   Loris::Analyzer a(resolutionHz, windowWidthHz);
+
 
   //
   // configure analysis options
@@ -146,13 +160,14 @@ int AnalyzeCommand(Args& args)
   Loris::Channelizer::channelize(partials, partialsRef, 1);
   Loris::Distiller::distill(partials, 0.001);
 
-  std::cout << "Partial count: " << partials.size() << std::endl;
+  if (!quietOutput) {
+    std::cout << "Partial count: " << partials.size() << std::endl;
+  }
 
   //
   // output results
   //
 
-  docopt::value outputPath = args["--output"];
   if (outputPath) {
     utu::PartialData data = Marshal::from(partials);
     data.source = utu::PartialData::Source({std::filesystem::canonical(sourcePath), {}});
@@ -162,7 +177,9 @@ int AnalyzeCommand(Args& args)
     } else {
       std::ofstream os(outputPath.asString(), std::ios::binary);
       utu::PartialWriter::write(data, os);
-      std::cout << "Wrote: " << outputPath << std::endl;
+      if (!quietOutput) {
+        std::cout << "Wrote: " << outputPath << std::endl;
+      }
     }
   }
 
@@ -171,7 +188,42 @@ int AnalyzeCommand(Args& args)
 
 int SynthCommand(Args& args)
 {
-  auto partialPath = args["<sdif>"].asString();
+  std::string partialPath = args["<partial_file>"].asString();
+
+  bool quietOutput = args["--quiet"].asBool();
+
+  std::optional<utu::PartialData> data;
+  if (partialPath == "-") {
+    data = utu::PartialReader::read(std::cin);
+  } else {
+    std::ifstream is(partialPath, std::ios::binary);
+    data = utu::PartialReader::read(is);
+  }
+
+  if (!quietOutput) {
+    std::cout << "Partials: " << data->partials.size() << std::endl;
+  }
+
+  // convert into native Loris representation
+  Loris::PartialList partials = Marshal::from(*data);
+
+  std::optional<double> pitchShift = vtod(args["--pitch-shift"]);
+  if (pitchShift && *pitchShift != 0) {
+    if (!quietOutput) {
+      std::cout << "Shifting pitch by " << *pitchShift << " cents\n";
+    }
+    Loris::PartialUtils::shiftPitch(partials.begin(), partials.end(), *pitchShift);
+  }
+
+  docopt::value outputPath = args["--output"];
+  if (outputPath) {
+    auto sr = args["--sample-rate"].asLong();
+    Loris::AiffFile synthOut(partials.begin(), partials.end(), sr);
+    synthOut.write(outputPath.asString());
+    if (!quietOutput) {
+      std::cout << "Wrote: " << outputPath.asString() << std::endl;
+    }
+  }
 
   return 0;
 }
