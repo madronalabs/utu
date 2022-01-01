@@ -10,3 +10,6 @@
 [submodule "dep/googletest"]
 	path = dep/googletest
 	url = https://github.com/google/googletest.git
+[submodule "dep/libsndfile"]
+	path = dep/libsndfile
+	url = https://github.com/libsndfile/libsndfile.git
