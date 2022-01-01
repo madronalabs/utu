@@ -69,6 +69,18 @@ include(cmake/BuildLoris.cmake)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(dep/json)
 
+# libsndfile
+if(MSVC)
+  set(ENABLE_STATIC_RUNTIME ON)
+endif()
+set(ENABLE_EXTERNAL_LIBS OFF)
+set(ENABLE_CPACK OFF)
+set(ENABLE_PACKAGE_CONFIG OFF)
+set(BUILD_TESTING OFF)
+set(BUILD_PROGRAMS OFF)
+set(BUILD_EXAMPLES OFF)
+add_subdirectory(dep/libsndfile)
+
 # gtest
 add_subdirectory(dep/googletest)
 
@@ -81,6 +93,7 @@ set(exe_dependencies
   docopt_s
   loris::loris
   nlohmann_json::nlohmann_json
+  SndFile::sndfile
 )
 
 set(lib_dependencies

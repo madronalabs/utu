@@ -21,6 +21,7 @@
 #include <optional>
 #include <string>
 
+#include "AudioFile.h"
 #include "Marshal.h"
 
 using Args = std::map<std::string, docopt::value>;
@@ -95,9 +96,6 @@ int main(int argc, const char** argv)
 
 int AnalyzeCommand(Args& args)
 {
-  std::string sourcePath = args["<audio_file>"].asString();
-  Loris::AiffFile f(sourcePath);
-
   bool quietOutput = args["--quiet"].asBool();
 
   docopt::value outputPath = args["--output"];
@@ -149,6 +147,12 @@ int AnalyzeCommand(Args& args)
 
   if (args["--no-phase-correct"]) {
     a.setPhaseCorrect(false);
+  }
+
+  std::string sourcePath = args["<audio_file>"].asString();
+  AudioFile f = AudioFile::open(sourcePath, AudioFile::Mode::READ);
+  if (!quietOutput) {
+    std::cout << "Source: " << sourcePath << " ch: " << f.channels() << " sr: " << f.sampleRate() << " frames: " << f.frames() << std::endl;
   }
 
   //

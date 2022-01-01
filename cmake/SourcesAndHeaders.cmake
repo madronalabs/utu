@@ -3,6 +3,7 @@ set(sources
 )
 
 set(exe_sources
+    cmd/src/AudioFile.cpp
     cmd/src/Marshal.cpp
 		cmd/src/main.cpp
 		${sources}
