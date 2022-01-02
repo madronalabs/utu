@@ -37,7 +37,7 @@ class AudioPlayer final
     auto deviceCount = dac.getDeviceCount();
     for (unsigned int i = 0; i < deviceCount; i++) {
       auto info = dac.getDeviceInfo(i);
-      descriptions.push_back(std::string(info.name));
+      descriptions.push_back(info.name);
     }
 
     return descriptions;
@@ -156,7 +156,7 @@ class AudioPlayer final
 
     // determine size of converted audio
     double conversionRatio = static_cast<double>(desiredRate) / static_cast<double>(_sampleRate);
-    uint32_t outputFrames = static_cast<uint32_t>(std::ceil(_samples.size() * conversionRatio));
+    uint32_t outputFrames = static_cast<uint32_t>(std::ceil(static_cast<double>(_samples.size()) * conversionRatio));
 
     // NOTE: libsamplerate does not support double precision samples so
     // unfortunately a single precision copy of the input samples needs to be

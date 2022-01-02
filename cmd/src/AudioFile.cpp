@@ -8,6 +8,7 @@
 #include "AudioFile.h"
 
 #include <cassert>
+#include <cstring>
 #include <limits>
 
 std::optional<AudioFile::Format> AudioFile::inferFormat(const std::filesystem::path& p)
