@@ -135,14 +135,16 @@ int AudioFile::channels() const { return _file ? _info.channels : 0; }
 
 int64_t AudioFile::frames() const { return _file ? _info.frames : 0; }
 
-void AudioFile::write()
+void AudioFile::write(const Samples& samples)
 {
   if (_file) {
-    sf_count_t sampleCount = static_cast<sf_count_t>(_samples.size());
-    sf_count_t wrote = sf_write_double(_file, _samples.data(), sampleCount);
+    sf_count_t sampleCount = static_cast<sf_count_t>(samples.size());
+    sf_count_t wrote = sf_write_double(_file, samples.data(), sampleCount);
     assert(wrote == sampleCount);
   }
 }
+
+void AudioFile::write() { write(_samples); }
 
 void AudioFile::close()
 {

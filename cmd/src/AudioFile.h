@@ -14,62 +14,61 @@
 
 class AudioFile final
 {
-public:
-    using Samples = std::vector<double>;
+ public:
+  using Samples = std::vector<double>;
 
-    enum Mode {
-        READ,
-        WRITE,
-    };
+  enum Mode {
+    READ,
+    WRITE,
+  };
 
-    enum Format {
-        WAV,
-        AIFF,
-        CAF
-    };
+  enum Format { WAV, AIFF, CAF };
 
-    enum Encoding {
-        PCM_16,
-        PCM_24,
-        PCM_32,
-        FLOAT,
-        DOUBLE,
-    };
+  enum Encoding {
+    PCM_16,
+    PCM_24,
+    PCM_32,
+    FLOAT,
+    DOUBLE,
+  };
 
-    static std::optional<Format> inferFormat(const std::filesystem::path& p);
+  static std::optional<Format> inferFormat(const std::filesystem::path& p);
 
-    static AudioFile forRead(const std::filesystem::path& p);
-    static AudioFile forWrite(const std::filesystem::path& p, uint32_t sampleRate, uint16_t channels = 1, Format format = Format::WAV, Encoding encoding = Encoding::PCM_24);
+  static AudioFile forRead(const std::filesystem::path& p);
+  static AudioFile forWrite(const std::filesystem::path& p, uint32_t sampleRate,
+                            uint16_t channels = 1, Format format = Format::WAV,
+                            Encoding encoding = Encoding::PCM_24);
 
-    ~AudioFile();
+  ~AudioFile();
 
-    AudioFile(const AudioFile&) = delete;
-    AudioFile& operator=(const AudioFile&) = delete;
+  AudioFile(const AudioFile&) = delete;
+  AudioFile& operator=(const AudioFile&) = delete;
 
-    AudioFile(AudioFile&& other);
-    AudioFile& operator=(AudioFile&& other);
+  AudioFile(AudioFile&& other);
+  AudioFile& operator=(AudioFile&& other);
 
-    const std::filesystem::path& path() const { return _path; };
-    Mode mode() const { return _mode; };
+  const std::filesystem::path& path() const { return _path; };
+  Mode mode() const { return _mode; };
 
-    Samples& samples();
+  Samples& samples();
 
-    int sampleRate() const;
-    int channels() const;
-    int64_t frames() const;
+  int sampleRate() const;
+  int channels() const;
+  int64_t frames() const;
 
-    void write();
-    void close();
+  void write();
+  void write(const Samples& samples);
+  void close();
 
-private:
-    AudioFile(const std::filesystem::path& p, Mode m) : _path(p), _mode(m), _file(nullptr) {};
+ private:
+  AudioFile(const std::filesystem::path& p, Mode m) : _path(p), _mode(m), _file(nullptr){};
 
-    void _loadSamples();
+  void _loadSamples();
 
-    std::filesystem::path _path;
-    Mode _mode;
-    Samples _samples;
+  std::filesystem::path _path;
+  Mode _mode;
+  Samples _samples;
 
-    SNDFILE *_file;
-    SF_INFO _info;
+  SNDFILE* _file;
+  SF_INFO _info;
 };

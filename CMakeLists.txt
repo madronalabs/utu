@@ -81,6 +81,9 @@ set(BUILD_PROGRAMS OFF CACHE INTERNAL "")
 set(BUILD_EXAMPLES OFF CACHE INTERNAL "")
 add_subdirectory(dep/libsndfile)
 
+# rtaudio
+add_subdirectory(dep/rtaudio)
+
 # gtest
 add_subdirectory(dep/googletest)
 
@@ -94,6 +97,7 @@ set(exe_dependencies
   loris::loris
   nlohmann_json::nlohmann_json
   SndFile::sndfile
+  rtaudio
 )
 
 set(lib_dependencies

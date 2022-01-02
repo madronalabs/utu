@@ -21,6 +21,7 @@
 #include <string>
 
 #include "AudioFile.h"
+#include "AudioPlayer.h"
 #include "Marshal.h"
 
 using Args = std::map<std::string, docopt::value>;
@@ -69,6 +70,7 @@ static const char USAGE[] =
     Synth Options:
       --pitch-shift=<cents>        shift the pitch partials [default: 0]
       --sample-rate=<rate>         sample rate [default: 44100]
+      --audition                   play result out default audio interface
 )";
 
 int main(int argc, const char** argv)
@@ -92,6 +94,10 @@ int main(int argc, const char** argv)
 
   return -1;
 }
+
+//
+// analyze subcommand
+//
 
 int AnalyzeCommand(Args& args)
 {
@@ -189,6 +195,10 @@ int AnalyzeCommand(Args& args)
   return 0;
 }
 
+//
+// synth subcommand
+//
+
 int SynthCommand(Args& args)
 {
   std::string partialPath = args["<partial_file>"].asString();
@@ -225,6 +235,15 @@ int SynthCommand(Args& args)
   params.sampleRate = sr;
   // TODO: fade time
 
+  // perform synthesis
+  std::vector<double> samples;
+  Loris::Synthesizer synth(params, samples);
+  synth.synthesize(partials.begin(), partials.end());
+
+  if (!quietOutput) {
+    std::cout << "Calculated: " << samples.size() << " frames, at: " << sr << std::endl;
+  }
+
   docopt::value outputPath = args["--output"];
   if (outputPath) {
     std::optional<AudioFile::Format> format = AudioFile::inferFormat(outputPath.asString());
@@ -234,15 +253,17 @@ int SynthCommand(Args& args)
     }
 
     AudioFile f = AudioFile::forWrite(outputPath.asString(), sr, 1 /* channel */, *format);
-
-    Loris::Synthesizer synth(params, f.samples());
-    synth.synthesize(partials.begin(), partials.end());
-
-    f.write();
+    f.write(samples);
 
     if (!quietOutput) {
       std::cout << "Wrote: " << outputPath.asString() << std::endl;
     }
+  }
+
+  docopt::value audition = args["--audition"];
+  if (audition.asBool()) {
+    AudioPlayer player(samples, sr);
+    player.play();
   }
 
   return 0;

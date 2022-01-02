@@ -3,7 +3,9 @@ set(sources
 )
 
 set(exe_sources
+    cmd/src/AudioPlayer.h
     cmd/src/AudioFile.cpp
+    cmd/src/AudioFile.h
     cmd/src/Marshal.cpp
 		cmd/src/main.cpp
 		${sources}
