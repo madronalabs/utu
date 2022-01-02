@@ -241,7 +241,7 @@ int SynthCommand(Args& args)
   synth.synthesize(partials.begin(), partials.end());
 
   if (!quietOutput) {
-    std::cout << "Calculated: " << samples.size() << " frames, at: " << sr << std::endl;
+    std::cout << "Calculated: " << samples.size() << " frames, sr: " << sr << std::endl;
   }
 
   docopt::value outputPath = args["--output"];

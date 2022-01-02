@@ -58,8 +58,27 @@ class AudioPlayer final
 
     unsigned int bufferFrames = 512;  // size of output block
 
-    if (dac.openStream(&params, nullptr /* input options */, RTAUDIO_FLOAT64, _sampleRate,
-                       &bufferFrames, &_audioCallback, this, &options)) {
+    auto info = dac.getDeviceInfo(params.deviceId);
+    if (verbose) {
+      std::cout << "Output Device: " << info.name << " (sr: " << info.preferredSampleRate
+                << " ch: " << info.outputChannels << ")\n";
+    }
+
+    if (info.preferredSampleRate != _sampleRate) {
+      // TODO: provide sample rate conversion?
+
+      // NOTE: bail if the sample rate of the playback device doesn't match the
+      // input. Forcing the audio device to change sample rate causes problems
+      // anywhere from disruption of playback in other applications to
+      // destabalizing the audio system if the host is not in control of the
+      // sample rate for external hardware.
+      std::cout << "error: Output device sr: " << info.preferredSampleRate
+                << " does not match sample rate of playback material\n";
+      return -1;
+    }
+
+    if (dac.openStream(&params, nullptr /* input options */, RTAUDIO_FLOAT64,
+                       info.preferredSampleRate, &bufferFrames, &_audioCallback, this, &options)) {
       status = -200;
       goto cleanup;
     }
@@ -67,11 +86,6 @@ class AudioPlayer final
     if (!dac.isStreamOpen()) {
       status = -201;
       goto cleanup;
-    }
-
-    if (verbose) {
-      auto info = dac.getDeviceInfo(params.deviceId);
-      std::cout << "Output Device: " << info.name << std::endl;
     }
 
     if (dac.startStream()) {
