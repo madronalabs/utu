@@ -53,7 +53,6 @@ class AudioPlayer final
 
     RtAudio::StreamOptions options;
     options.flags = 0;
-    options.flags = RTAUDIO_HOG_DEVICE;
     options.flags |= RTAUDIO_SCHEDULE_REALTIME;
 
     unsigned int bufferFrames = 512;  // size of output block
