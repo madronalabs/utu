@@ -9,6 +9,7 @@
 #include <sndfile.h>
 
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 class AudioFile final
@@ -20,7 +21,25 @@ public:
         READ,
         WRITE,
     };
-    static AudioFile open(const std::filesystem::path& p, Mode m = Mode::READ);
+
+    enum Format {
+        WAV,
+        AIFF,
+        CAF
+    };
+
+    enum Encoding {
+        PCM_16,
+        PCM_24,
+        PCM_32,
+        FLOAT,
+        DOUBLE,
+    };
+
+    static std::optional<Format> inferFormat(const std::filesystem::path& p);
+
+    static AudioFile forRead(const std::filesystem::path& p);
+    static AudioFile forWrite(const std::filesystem::path& p, uint32_t sampleRate, uint16_t channels = 1, Format format = Format::WAV, Encoding encoding = Encoding::PCM_24);
 
     ~AudioFile();
 
@@ -33,12 +52,13 @@ public:
     const std::filesystem::path& path() const { return _path; };
     Mode mode() const { return _mode; };
 
-    const Samples& samples();
+    Samples& samples();
 
     int sampleRate() const;
     int channels() const;
     int64_t frames() const;
 
+    void write();
     void close();
 
 private:

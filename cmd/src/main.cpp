@@ -5,13 +5,12 @@
 //
 
 #include <docopt.h>
-#include <loris/AiffFile.h>
 #include <loris/Analyzer.h>
 #include <loris/Channelizer.h>
 #include <loris/Distiller.h>
 #include <loris/FrequencyReference.h>
 #include <loris/PartialList.h>
-#include <loris/SdifFile.h>
+#include <loris/Synthesizer.h>
 #include <utu/utu.h>
 #include <utu/version.h>
 
@@ -110,7 +109,6 @@ int AnalyzeCommand(Args& args)
 
   Loris::Analyzer a(resolutionHz, windowWidthHz);
 
-
   //
   // configure analysis options
   //
@@ -150,9 +148,10 @@ int AnalyzeCommand(Args& args)
   }
 
   std::string sourcePath = args["<audio_file>"].asString();
-  AudioFile f = AudioFile::open(sourcePath, AudioFile::Mode::READ);
+  AudioFile f = AudioFile::forRead(sourcePath);
   if (!quietOutput) {
-    std::cout << "Source: " << sourcePath << " ch: " << f.channels() << " sr: " << f.sampleRate() << " frames: " << f.frames() << std::endl;
+    std::cout << "Source: " << sourcePath << " ch: " << f.channels() << " sr: " << f.sampleRate()
+              << " frames: " << f.frames() << std::endl;
   }
 
   //
@@ -165,7 +164,7 @@ int AnalyzeCommand(Args& args)
   Loris::Distiller::distill(partials, 0.001);
 
   if (!quietOutput) {
-    std::cout << "Partial count: " << partials.size() << std::endl;
+    std::cout << "Partials: " << partials.size() << std::endl;
   }
 
   //
@@ -219,11 +218,28 @@ int SynthCommand(Args& args)
     Loris::PartialUtils::shiftPitch(partials.begin(), partials.end(), *pitchShift);
   }
 
+  auto sr = static_cast<uint32_t>(args["--sample-rate"].asLong());
+
+  // configure Loris synthesizer paramters
+  Loris::Synthesizer::Parameters params;
+  params.sampleRate = sr;
+  // TODO: fade time
+
   docopt::value outputPath = args["--output"];
   if (outputPath) {
-    auto sr = args["--sample-rate"].asLong();
-    Loris::AiffFile synthOut(partials.begin(), partials.end(), sr);
-    synthOut.write(outputPath.asString());
+    std::optional<AudioFile::Format> format = AudioFile::inferFormat(outputPath.asString());
+    if (!format) {
+      std::cout << "error: Unsupported output format; must be .wav, .aiff, or .caf\n";
+      return -1;
+    }
+
+    AudioFile f = AudioFile::forWrite(outputPath.asString(), sr, 1 /* channel */, *format);
+
+    Loris::Synthesizer synth(params, f.samples());
+    synth.synthesize(partials.begin(), partials.end());
+
+    f.write();
+
     if (!quietOutput) {
       std::cout << "Wrote: " << outputPath.asString() << std::endl;
     }
