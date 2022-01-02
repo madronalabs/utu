@@ -84,6 +84,9 @@ add_subdirectory(dep/libsndfile)
 # rtaudio
 add_subdirectory(dep/rtaudio)
 
+# libsamplerate
+add_subdirectory(dep/libsamplerate)
+
 # gtest
 add_subdirectory(dep/googletest)
 
@@ -97,6 +100,7 @@ set(exe_dependencies
   loris::loris
   nlohmann_json::nlohmann_json
   SndFile::sndfile
+  SampleRate::samplerate
   rtaudio
 )
 

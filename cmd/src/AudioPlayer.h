@@ -11,24 +11,33 @@
 #include <RtAudio.h>
 #pragma GCC diagnostic pop
 
+#include <samplerate.h>
+
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstring>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <thread>
 
 class AudioPlayer final
 {
  public:
-  using Samples = std::vector<double>;
+  using Samples64 = std::vector<double>;
+  using Samples32 = std::vector<float>;
 
-  AudioPlayer(const Samples& samples, uint32_t sampleRate)
-      : _samples(samples), _sampleRate(sampleRate), _playbackOffset(0), _blocksOutput(0)
+  AudioPlayer(const Samples64& samples, uint32_t sampleRate)
+      : _samples(samples),
+        _sampleRate(sampleRate),
+        _playbackOffset(0),
+        _blocksOutput(0),
+        _convertedSamples({})
   {
   }
 
-  int play(bool verbose = true)
+  int play(bool verbose = true, bool src = true)
   {
     using namespace std::chrono_literals;
 
@@ -64,20 +73,27 @@ class AudioPlayer final
     }
 
     if (info.preferredSampleRate != _sampleRate) {
-      // TODO: provide sample rate conversion?
-
-      // NOTE: bail if the sample rate of the playback device doesn't match the
-      // input. Forcing the audio device to change sample rate causes problems
-      // anywhere from disruption of playback in other applications to
-      // destabalizing the audio system if the host is not in control of the
-      // sample rate for external hardware.
-      std::cout << "error: Output device sr: " << info.preferredSampleRate
-                << " does not match sample rate of playback material\n";
-      return -1;
+      if (!_convertedSamples && !src) {
+        // NOTE: bail if the sample rate of the playback device doesn't match the
+        // input. Forcing the audio device to change sample rate causes problems
+        // anywhere from disruption of playback in other applications to
+        // destabalizing the audio system if the host is not in control of the
+        // sample rate for external hardware.
+        std::cout << "error: Output device sr: " << info.preferredSampleRate
+                  << " does not match sample rate of playback material\n";
+        return -1;
+      } else {
+        _convert(info.preferredSampleRate);
+        if (verbose) {
+          std::cout << "Converted sr: " << _sampleRate << " source to " << info.preferredSampleRate
+                    << " for playback\n";
+        }
+      }
     }
 
-    if (dac.openStream(&params, nullptr /* input options */, RTAUDIO_FLOAT64,
-                       info.preferredSampleRate, &bufferFrames, &_audioCallback, this, &options)) {
+    RtAudioFormat bufferFormat = _convertedSamples ? RTAUDIO_FLOAT32 : RTAUDIO_FLOAT64;
+    if (dac.openStream(&params, nullptr /* input options */, bufferFormat, info.preferredSampleRate,
+                       &bufferFrames, &_audioCallback, this, &options)) {
       status = -200;
       goto cleanup;
     }
@@ -97,11 +113,7 @@ class AudioPlayer final
       std::this_thread::sleep_for(500ms);
       std::cerr << ".";
     }
-    std::cerr << "done.\n";
-
-    if (verbose) {
-      std::cerr << "Output Blocks: " << _blocksOutput << std::endl;
-    }
+    std::cerr << "done. (blocks: " << _blocksOutput << ")\n";
 
   cleanup:
     if (dac.isStreamOpen()) {
@@ -112,24 +124,72 @@ class AudioPlayer final
   }
 
  private:
-  const Samples& _samples;
+  const Samples64& _samples;
   const uint32_t _sampleRate;
 
   uint64_t _playbackOffset;
   uint64_t _blocksOutput;
 
-  int _output(void* outputBuffer, unsigned int nFrames)
+  std::optional<Samples32> _convertedSamples;
+  uint32_t _convertedRate;
+
+  void _convert(uint32_t desiredRate)
   {
-    uint64_t framesRemaining = _samples.size() - _playbackOffset;
+    if (_convertedSamples && _convertedRate == desiredRate) {
+      return;  // nothing to do
+    }
+
+    // determine size of converted audio
+    double conversionRatio = static_cast<double>(desiredRate) / static_cast<double>(_sampleRate);
+    uint32_t outputFrames = static_cast<uint32_t>(std::ceil(_samples.size() * conversionRatio));
+
+    // NOTE: libsamplerate does not support double precision samples so
+    // unfortunately a single precision copy of the input samples needs to be
+    // created to feed conversion.
+    Samples32 original(_samples.begin(), _samples.end());
+
+    // allocate converted audio buffer
+    Samples32 converted;
+    converted.assign(outputFrames, 0);
+
+    SRC_DATA params;
+    params.data_in = original.data();
+    params.data_out = converted.data();
+    params.input_frames = static_cast<long>(original.size());
+    params.output_frames = static_cast<long>(outputFrames);
+    params.src_ratio = conversionRatio;
+
+    int status = src_simple(&params, SRC_SINC_BEST_QUALITY, 1);
+    if (status != 0) {
+      std::cerr << "error: " << src_strerror(status) << std::endl;
+      return;
+    }
+
+    _convertedSamples = converted;
+    _convertedRate = desiredRate;
+  }
+
+  template <typename T>
+  inline int _outputSamples(void* outputBuffer, unsigned int nFrames, const T& outputSamples)
+  {
+    uint64_t framesRemaining = outputSamples.size() - _playbackOffset;
     uint64_t framesToCopy = std::min(static_cast<uint64_t>(nFrames), framesRemaining);
 
-    std::memcpy(outputBuffer, &_samples[_playbackOffset],
-                framesToCopy * sizeof(Samples::value_type));
+    std::memcpy(outputBuffer, &outputSamples[_playbackOffset],
+                framesToCopy * sizeof(typename T::value_type));
 
     _playbackOffset += framesToCopy;
-    framesRemaining = _samples.size() - _playbackOffset;
+    framesRemaining = outputSamples.size() - _playbackOffset;
     _blocksOutput += 1;
     return framesRemaining > 0 ? 0 /* keep requesting */ : 1 /* drain the buffer and stop */;
+  }
+
+  int _output(void* outputBuffer, unsigned int nFrames)
+  {
+    if (_convertedSamples) {
+      return _outputSamples(outputBuffer, nFrames, *_convertedSamples);
+    }
+    return _outputSamples(outputBuffer, nFrames, _samples);
   }
 
   static void _errorCallback(RtAudioErrorType /* type */, const std::string& error)
