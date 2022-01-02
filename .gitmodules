@@ -16,3 +16,6 @@
 [submodule "dep/rtaudio"]
 	path = dep/rtaudio
 	url = https://github.com/thestk/rtaudio.git
+[submodule "dep/libsamplerate"]
+	path = dep/libsamplerate
+	url = https://github.com/libsndfile/libsamplerate.git
