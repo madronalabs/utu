@@ -37,6 +37,7 @@ T checkAboveZero(std::optional<T> n, const char* message);
 
 int AnalyzeCommand(Args& args);
 int SynthCommand(Args& args);
+int SynthCommandListOutputDevices(Args& args);
 
 static const char USAGE[] =
     R"(utu
@@ -44,6 +45,7 @@ static const char USAGE[] =
     Usage:
       utu analyze <audio_file> [options] [--output=<file>]
       utu synth <partial_file> [options] [--output=<file>]
+      utu synth --list-devices
       utu (-h | --help)
       utu --version
 
@@ -70,7 +72,9 @@ static const char USAGE[] =
     Synth Options:
       --pitch-shift=<cents>        shift the pitch partials [default: 0]
       --sample-rate=<rate>         sample rate [default: 44100]
-      --audition                   play result out default audio interface
+      --audition                   play result out given audio interface
+      --device=<device_num>        play out device other than default output
+      --list-devices               list output devices for auditioning
 )";
 
 int main(int argc, const char** argv)
@@ -201,6 +205,11 @@ int AnalyzeCommand(Args& args)
 
 int SynthCommand(Args& args)
 {
+  // special case, --list-devices
+  if (args["--list-devices"].asBool()) {
+    return SynthCommandListOutputDevices(args);
+  }
+
   std::string partialPath = args["<partial_file>"].asString();
 
   bool quietOutput = args["--quiet"].asBool();
@@ -262,12 +271,38 @@ int SynthCommand(Args& args)
 
   docopt::value audition = args["--audition"];
   if (audition.asBool()) {
+    std::optional<uint8_t> outputDevice;
+    if (args["--device"]) {
+      outputDevice = static_cast<uint8_t>(args["--device"].asLong());
+    }
+
     AudioPlayer player(samples, sr);
-    player.play();
+    player.play(outputDevice);
   }
 
   return 0;
 }
+
+int SynthCommandListOutputDevices(Args& /* args */)
+{
+  auto descriptions = AudioPlayer::getOutputDeviceDescriptions();
+
+  if (descriptions.size() == 0) {
+    std::cerr << "error: No output devices found\n";
+    return -1;
+  }
+
+  std::cout << "Available devices:\n\n";
+  for (unsigned int index = 0; index < descriptions.size(); ++index) {
+    std::cerr << "  " << index << ": " << descriptions[index] << std::endl;
+  }
+
+  return 0;
+}
+
+//
+// Helpers
+//
 
 std::optional<double> vtod(const docopt::value& v) noexcept
 {

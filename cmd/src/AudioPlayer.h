@@ -28,6 +28,21 @@ class AudioPlayer final
   using Samples64 = std::vector<double>;
   using Samples32 = std::vector<float>;
 
+  static std::vector<std::string> getOutputDeviceDescriptions()
+  {
+    std::vector<std::string> descriptions;
+
+    RtAudio dac(RtAudio::UNSPECIFIED, &_errorCallback);
+
+    auto deviceCount = dac.getDeviceCount();
+    for (unsigned int i = 0; i < deviceCount; i++) {
+      auto info = dac.getDeviceInfo(i);
+      descriptions.push_back(std::string(info.name));
+    }
+
+    return descriptions;
+  }
+
   AudioPlayer(const Samples64& samples, uint32_t sampleRate)
       : _samples(samples),
         _sampleRate(sampleRate),
@@ -37,7 +52,7 @@ class AudioPlayer final
   {
   }
 
-  int play(bool verbose = true, bool src = true)
+  int play(std::optional<uint8_t> outputDevice = {}, bool verbose = true, bool src = true)
   {
     using namespace std::chrono_literals;
 
@@ -56,7 +71,7 @@ class AudioPlayer final
     dac.showWarnings();
 
     RtAudio::StreamParameters params;
-    params.deviceId = dac.getDefaultOutputDevice();
+    params.deviceId = outputDevice ? *outputDevice : dac.getDefaultOutputDevice();
     params.nChannels = 1;
     params.firstChannel = 0;
 
