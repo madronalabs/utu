@@ -96,6 +96,7 @@ AudioFile::AudioFile(AudioFile&& other)
   _mode = other._mode;
   _file = other._file;
   _info = other._info;
+  _samples = other._samples;
 
   other._file = nullptr;
   memset(&other._info, 0, sizeof(SF_INFO));
@@ -111,6 +112,7 @@ AudioFile& AudioFile::operator=(AudioFile&& other)
     _mode = other._mode;
     _file = other._file;
     _info = other._info;
+    _samples = other._samples;
 
     other._file = nullptr;
     memset(&other._info, 0, sizeof(SF_INFO));
