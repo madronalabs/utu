@@ -9,10 +9,12 @@ to be used in a wide number of environments.
 
 `utu` requires a C++17 capable compiler, tested compilers include:
 
-| compiler | version | platform |
-| -------- | ------- | -------- |
-| clang | Apple clang version 13.0.0 | arm64-apple-darwin21.2.0 |
-| gcc | 10.2.1 20210110 (Debian 10.2.1-6) | aarch64-linux-gnu |
+| compiler | version | platform | os |
+| -------- | ------- | -------- | -- |
+| gcc | 10.2.1 20210110 | aarch64-linux-gnu | Debian Bullseye |
+| clang | Apple clang version 13.0.0 | arm64-apple-darwin21.2.0 | Monterey |
+| clang | Apple clang version 13.0.0 | x86_64-apple-darwin20.6.0 | Big Sur |
+
 
 ### dependencies
 
