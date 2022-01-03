@@ -26,20 +26,20 @@ TEST(json, CanReadOptional)
 TEST(json, CanReadPartial)
 {
   json e1 = R"({
-    "envelopes": {
+    "parameters": {
       "amplitude": [0.2, 0.4, -0.2, -0.3]
     }
   })"_json;
 
   utu::Partial p1 = e1;
   EXPECT_FALSE(p1.label);
-  EXPECT_EQ(p1.envelopes.size(), 1);
-  EXPECT_NE(p1.envelopes.find("amplitude"), p1.envelopes.end());
-  EXPECT_EQ(p1.envelopes["amplitude"].size(), 4);
+  EXPECT_EQ(p1.parameters.size(), 1);
+  EXPECT_NE(p1.parameters.find("amplitude"), p1.parameters.end());
+  EXPECT_EQ(p1.parameters["amplitude"].size(), 4);
 
   json e2 = R"({
     "label": "component-1",
-    "envelopes": {
+    "parameters": {
       "time": [0, 0.1, 0.2, 0.3],
       "frequency": [440.0, 440.5, 462.2, 439.8]
     }
@@ -47,9 +47,9 @@ TEST(json, CanReadPartial)
 
   utu::Partial p2 = e2;
   EXPECT_EQ(*p2.label, "component-1");
-  EXPECT_EQ(p2.envelopes.size(), 2);
-  EXPECT_EQ(p2.envelopes["frequency"].size(), 4);
-  EXPECT_DOUBLE_EQ(p2.envelopes["frequency"][2], 462.2);
+  EXPECT_EQ(p2.parameters.size(), 2);
+  EXPECT_EQ(p2.parameters["frequency"].size(), 4);
+  EXPECT_DOUBLE_EQ(p2.parameters["frequency"][2], 462.2);
 }
 
 TEST(json, CanReadPartialDataSource)
@@ -79,7 +79,7 @@ TEST(json, CanReadPartialData)
     "parameters": ["foo", "bar", "baz"],
     "partials": [
       {
-        "envelopes": {
+        "parameters": {
           "time": [0, 0.1, 0.2, 0.3],
           "frequency": [440.0, 440.5, 462.2, 439.8]
         }
@@ -100,14 +100,14 @@ TEST(json, CanReadPartialData)
     "parameters": ["foo", "bar", "baz"],
     "partials": [
       {
-        "envelopes": {
+        "parameters": {
           "time": [0, 0.1, 0.2, 0.3],
           "frequency": [440.0, 440.5, 462.2, 439.8]
         }
       },
       {
         "label": "a component label",
-        "envelopes": {
+        "parameters": {
           "foo": [0, 0.1, 0.2, 0.3],
           "bar": [1, 2]
         }
@@ -122,9 +122,9 @@ TEST(json, CanReadPartialData)
   EXPECT_EQ(maximal.parameters[2], "baz");
 
   const utu::Partial& p2 = maximal.partials[1];
-  EXPECT_NE(p2.envelopes.find("bar"), p2.envelopes.end());
+  EXPECT_NE(p2.parameters.find("bar"), p2.parameters.end());
 
-  const utu::Partial::Envelope& e = p2.envelopes.find("bar")->second;
+  const utu::Partial::Samples& e = p2.parameters.find("bar")->second;
   EXPECT_DOUBLE_EQ(e[1], 2);
 }
 
@@ -142,7 +142,7 @@ TEST(json, PartialReader)
     "partials": [
         {
             "label": "component-1",
-            "envelopes": {
+            "parameters": {
                 "time": [0, 440, 0.3, 0.2, 0],
                 "frequency": [0.2, 440, 0.3, 0.2, 0],
                 "amplitude": [0.5, 440, 0.3, 0.2, 0],
@@ -151,7 +151,7 @@ TEST(json, PartialReader)
             }
         },
         {
-            "envelopes": {
+            "parameters": {
                 "time": [0.3, 440, 0.3, 0.2, 0],
                 "frequency": [3.0, 440, 0.3, 0.2, 0],
                 "amplitude": [4.2, 440, 0.3, 0.2, 0]

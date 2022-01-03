@@ -22,11 +22,11 @@ utu::PartialData Marshal::from(const Loris::PartialList& partials)
   };
 
   for (const auto& ip : partials) {
-    utu::Partial::Envelope time;
-    utu::Partial::Envelope frequency;
-    utu::Partial::Envelope amplitude;
-    utu::Partial::Envelope bandwidth;
-    utu::Partial::Envelope phase;
+    utu::Partial::Samples time;
+    utu::Partial::Samples frequency;
+    utu::Partial::Samples amplitude;
+    utu::Partial::Samples bandwidth;
+    utu::Partial::Samples phase;
 
     for (auto it = ip.begin(); it != ip.end(); it++) {
       time.push_back(it.time());
@@ -37,11 +37,11 @@ utu::PartialData Marshal::from(const Loris::PartialList& partials)
     }
 
     utu::Partial op;
-    op.envelopes[kTimeName] = time;
-    op.envelopes[kFrequencyName] = frequency;
-    op.envelopes[kAmplitudeName] = amplitude;
-    op.envelopes[kBandwidthName] = bandwidth;
-    op.envelopes[kPhaseName] = phase;
+    op.parameters[kTimeName] = time;
+    op.parameters[kFrequencyName] = frequency;
+    op.parameters[kAmplitudeName] = amplitude;
+    op.parameters[kBandwidthName] = bandwidth;
+    op.parameters[kPhaseName] = phase;
 
     result.push_back(op);  // FIXME: check for errors
   }
@@ -56,11 +56,11 @@ Loris::PartialList Marshal::from(const utu::PartialData& data)
   Loris::PartialList result;
 
   for (auto partial : data.partials) {
-    auto times = partial.envelopes[kTimeName];
-    auto frequencies = partial.envelopes[kFrequencyName];
-    auto amplitudes = partial.envelopes[kAmplitudeName];
-    auto bandwidths = partial.envelopes[kBandwidthName];
-    auto phases = partial.envelopes[kPhaseName];
+    auto times = partial.parameters[kTimeName];
+    auto frequencies = partial.parameters[kFrequencyName];
+    auto amplitudes = partial.parameters[kAmplitudeName];
+    auto bandwidths = partial.parameters[kBandwidthName];
+    auto phases = partial.parameters[kPhaseName];
 
     auto t = times.cbegin();
     auto f = frequencies.cbegin();

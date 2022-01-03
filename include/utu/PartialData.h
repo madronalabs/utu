@@ -35,7 +35,7 @@ struct PartialData {
   {
     // Ensure the incoming partial has all the expected parameters
     for (const auto& param : parameters) {
-      if (partial.envelopes.find(param) == partial.envelopes.end()) {
+      if (partial.parameters.find(param) == partial.parameters.end()) {
         return false;
       }
     }

@@ -56,13 +56,13 @@ struct adl_serializer<utu::Partial> {
     if (p.label) {
       j["label"] = *p.label;
     }
-    j["envelopes"] = p.envelopes;
+    j["parameters"] = p.parameters;
   }
 
   static void from_json(const json& j, utu::Partial& p)
   {
     p.label = j.value("label", std::optional<std::string>({}));
-    p.envelopes = j["envelopes"].get<utu::Partial::Envelopes>();
+    p.parameters = j["parameters"].get<utu::Partial::Parameters>();
     // TODO: ensure there is at least one envelope
   }
 };

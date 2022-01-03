@@ -15,11 +15,11 @@ namespace utu
 {
 
 struct Partial {
-  using Envelope = std::vector<double>;
-  using Envelopes = std::unordered_map<std::string, Envelope>;
+  using Samples = std::vector<double>;
+  using Parameters = std::unordered_map<std::string, Samples>;
 
   std::optional<std::string> label;
-  Envelopes envelopes;
+  Parameters parameters;
 };
 
 }  // namespace utu
