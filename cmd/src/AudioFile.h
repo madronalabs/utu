@@ -33,6 +33,7 @@ class AudioFile final
   };
 
   static std::optional<Format> inferFormat(const std::filesystem::path& p);
+  static std::optional<Encoding> inferEncoding(const std::string& s);
 
   static AudioFile forRead(const std::filesystem::path& p);
   static AudioFile forWrite(const std::filesystem::path& p, uint32_t sampleRate,

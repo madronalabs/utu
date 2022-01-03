@@ -72,6 +72,7 @@ static const char USAGE[] =
     Synth Options:
       --pitch-shift=<cents>        shift the pitch partials [default: 0]
       --sample-rate=<rate>         sample rate [default: 44100]
+      --sample-type=(16|24|32|f32|f64)  sample type [default: 24]
       --audition                   play result out given audio interface
       --device=<device_num>        play out device other than default output
       --list-devices               list output devices for auditioning
@@ -86,7 +87,7 @@ int main(int argc, const char** argv)
 #if 0
   for (auto const& arg : args)
   {
-    std::cout << arg.first << arg.second << std::endl;
+    std::cout << arg.first << " " << arg.second << std::endl;
   }
 #endif
 
@@ -261,7 +262,15 @@ int SynthCommand(Args& args)
       return -1;
     }
 
-    AudioFile f = AudioFile::forWrite(outputPath.asString(), sr, 1 /* channel */, *format);
+    docopt::value sampleType = args["--sample-type"];
+    std::optional<AudioFile::Encoding> encoding = AudioFile::inferEncoding(sampleType.asString());
+    if (!encoding) {
+      std::cout << "error: Unsupported sample type; must be 16, 24, 32, f32, or f64\n";
+      return -1;
+    }
+
+    AudioFile f =
+        AudioFile::forWrite(outputPath.asString(), sr, 1 /* channel */, *format, *encoding);
     f.write(samples);
 
     if (!quietOutput) {

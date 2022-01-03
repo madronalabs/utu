@@ -27,6 +27,27 @@ std::optional<AudioFile::Format> AudioFile::inferFormat(const std::filesystem::p
   return {};
 }
 
+std::optional<AudioFile::Encoding> AudioFile::inferEncoding(const std::string& s)
+{
+  if (s == "16") {
+    return AudioFile::Encoding::PCM_16;
+  }
+  if (s == "24") {
+    return AudioFile::Encoding::PCM_24;
+  }
+  if (s == "32") {
+    return AudioFile::Encoding::PCM_32;
+  }
+  if (s == "f32") {
+    return AudioFile::Encoding::FLOAT;
+  }
+  if (s == "f64") {
+    return AudioFile::Encoding::DOUBLE;
+  }
+
+  return {};
+}
+
 AudioFile AudioFile::forRead(const std::filesystem::path& p)
 {
   AudioFile file(p, Mode::READ);
