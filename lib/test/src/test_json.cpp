@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2021 Greg Wuller.
+//
+// SPDX-License-Identifier: MIT
+//
+
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 

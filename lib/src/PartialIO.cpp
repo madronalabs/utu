@@ -1,7 +1,7 @@
 //
 // Copyright (c) 2021 Greg Wuller.
 //
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: MIT
 //
 
 #include <utu/PartialIO.h>
