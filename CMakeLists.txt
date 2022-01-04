@@ -128,7 +128,7 @@ if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   endif()
 
   if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-    add_library(${PROJECT_NAME}_LIB ${headers} ${sources})
+    add_library(${PROJECT_NAME}_LIB ${lib_headers} ${lib_sources})
     target_link_libraries(${PROJECT_NAME}_LIB ${lib_dependencies})
 
     if(${PROJECT_NAME}_VERBOSE_OUTPUT)
@@ -150,8 +150,8 @@ elseif(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
 else()
   add_library(
     ${PROJECT_NAME}
-    ${headers}
-    ${sources}
+    ${lib_headers}
+    ${lib_sources}
   )
 
   if(${PROJECT_NAME}_VERBOSE_OUTPUT)
@@ -256,33 +256,33 @@ if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
     ${PROJECT_NAME}
     INTERFACE
     $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/include>
   )
 else()
   target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
     $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-    # Adds project internal source to include path if target has utu_INTERNAL property set to true
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/include>
+    # Adds library internal source dir to include path if target has utu_INTERNAL property set to true
     # https://stackoverflow.com/questions/54652349/how-to-unit-test-private-features-of-library-tdd-with-cmake
     $<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:${PROJECT_NAME}_INTERNAL>>:${CMAKE_CURRENT_SOURCE_DIR}/src>>
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/src
   )
   if(${PROJECT_NAME}_BUILD_EXECUTABLE AND ${PROJECT_NAME}_ENABLE_UNIT_TESTING)
     target_include_directories(
       ${PROJECT_NAME}_LIB
       PUBLIC
       $<INSTALL_INTERFACE:include>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-      # Adds project internal source to include path if target has PROJECT_INTERNAL property set to true
-      $<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:${PROJECT_NAME}_INTERNAL>>:${CMAKE_CURRENT_SOURCE_DIR}/src>>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib/include>
+      # Adds library internal source dir to include path if target has PROJECT_INTERNAL property set to true
+      $<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:${PROJECT_NAME}_INTERNAL>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/src>>
       PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/src
+      ${CMAKE_CURRENT_SOURCE_DIR}/lib/src
     )
   endif()
 endif()
@@ -346,7 +346,7 @@ install(
 
 configure_file(
   ${CMAKE_CURRENT_LIST_DIR}/cmake/version.h.in
-  include/${PROJECT_NAME_LOWERCASE}/version.h
+  lib/include/${PROJECT_NAME_LOWERCASE}/version.h
   @ONLY
 )
 
@@ -354,7 +354,7 @@ install(
   FILES
   ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME_LOWERCASE}/version.h
   DESTINATION
-  include/${PROJECT_NAME_LOWERCASE}
+  lib/include/${PROJECT_NAME_LOWERCASE}
 )
 
 #
@@ -363,7 +363,7 @@ install(
 
 install(
   DIRECTORY
-  include/${PROJECT_NAME_LOWERCASE}
+  lib/include/${PROJECT_NAME_LOWERCASE}
   DESTINATION
   include
 )
@@ -424,5 +424,5 @@ message(STATUS "Finished building requirements for installing the package.\n")
 if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
   enable_testing()
   message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
-  add_subdirectory(test)
+  add_subdirectory(lib/test)
 endif()

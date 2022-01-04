@@ -12,7 +12,6 @@
 #include <loris/PartialList.h>
 #include <loris/Synthesizer.h>
 #include <utu/utu.h>
-#include <utu/version.h>
 
 #include <filesystem>
 #include <fstream>
@@ -23,6 +22,8 @@
 #include "AudioFile.h"
 #include "AudioPlayer.h"
 #include "Marshal.h"
+
+#include "utu/version.h"
 
 using Args = std::map<std::string, docopt::value>;
 

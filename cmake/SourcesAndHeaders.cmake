@@ -1,5 +1,5 @@
-set(sources
-  src/PartialIO.cpp
+set(lib_sources
+  lib/src/PartialIO.cpp
 )
 
 set(exe_sources
@@ -8,15 +8,15 @@ set(exe_sources
     cmd/src/AudioFile.h
     cmd/src/Marshal.cpp
 		cmd/src/main.cpp
-		${sources}
+		${lib_sources}
 )
 
-set(headers
-    include/utu/utu.h
-    include/utu/Partial.h
-    include/utu/PartialData.h
-    include/utu/PartialIO.h
-    src/SerializerImpl.h
+set(lib_headers
+    lib/include/utu/utu.h
+    lib/include/utu/Partial.h
+    lib/include/utu/PartialData.h
+    lib/include/utu/PartialIO.h
+    lib/src/SerializerImpl.h
 )
 
 set(test_sources

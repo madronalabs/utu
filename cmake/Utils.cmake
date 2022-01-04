@@ -21,17 +21,17 @@ function(add_clang_format_target)
 			if(${PROJECT_NAME}_BUILD_EXECUTABLE)
 				add_custom_target(clang-format
 						COMMAND ${${PROJECT_NAME}_CLANG_FORMAT_BINARY}
-						-i ${exe_sources} ${headers}
+						-i ${exe_sources} ${lib_headers}
 						WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 			elseif(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
 				add_custom_target(clang-format
 						COMMAND ${${PROJECT_NAME}_CLANG_FORMAT_BINARY}
-						-i ${headers}
+						-i ${lib_headers}
 						WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 			else()
 				add_custom_target(clang-format
 						COMMAND ${${PROJECT_NAME}_CLANG_FORMAT_BINARY}
-						-i ${sources} ${headers}
+						-i ${lib_sources} ${lib_headers}
 						WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 			endif()
 
