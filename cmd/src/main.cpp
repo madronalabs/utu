@@ -10,6 +10,7 @@
 #include <loris/Distiller.h>
 #include <loris/FrequencyReference.h>
 #include <loris/PartialList.h>
+#include <loris/SdifFile.h>
 #include <loris/Synthesizer.h>
 #include <utu/utu.h>
 
@@ -22,7 +23,6 @@
 #include "AudioFile.h"
 #include "AudioPlayer.h"
 #include "Marshal.h"
-
 #include "utu/version.h"
 
 using Args = std::map<std::string, docopt::value>;
@@ -39,6 +39,7 @@ T checkAboveZero(std::optional<T> n, const char* message);
 int AnalyzeCommand(Args& args);
 int SynthCommand(Args& args);
 int SynthCommandListOutputDevices(Args& args);
+int ConvertCommand(Args& args);
 
 static const char USAGE[] =
     R"(utu
@@ -47,6 +48,7 @@ static const char USAGE[] =
       utu analyze <audio_file> [options] [--output=<file>]
       utu synth <partial_file> [options] [--output=<file>]
       utu synth --list-devices
+      utu convert (<in_sdif> <out_json> | <in_json> <out_sdif>)
       utu (-h | --help)
       utu --version
 
@@ -86,8 +88,7 @@ int main(int argc, const char** argv)
                              PROJECT_VERSION);  // version string
 
 #if 0
-  for (auto const& arg : args)
-  {
+  for (auto const& arg : args) {
     std::cout << arg.first << " " << arg.second << std::endl;
   }
 #endif
@@ -96,6 +97,8 @@ int main(int argc, const char** argv)
     return AnalyzeCommand(args);
   } else if (args["synth"].asBool()) {
     return SynthCommand(args);
+  } else if (args["convert"].asBool()) {
+    return ConvertCommand(args);
   }
 
   return -1;
@@ -184,17 +187,24 @@ int AnalyzeCommand(Args& args)
   //
 
   if (outputPath) {
-    utu::PartialData data = Marshal::from(partials);
-    data.source = utu::PartialData::Source({std::filesystem::canonical(sourcePath), {}});
-
-    if (outputPath.asString() == "-") {
-      utu::PartialWriter::write(data, std::cout);
+    if (std::filesystem::path(outputPath.asString()).extension() == ".sdif") {
+      // output native Loris SDIF files
+      Loris::SdifFile::Export(outputPath.asString(), partials);
     } else {
-      std::ofstream os(outputPath.asString(), std::ios::binary);
-      utu::PartialWriter::write(data, os);
-      if (!quietOutput) {
-        std::cout << "Wrote: " << outputPath << std::endl;
+      // output JSON format
+      utu::PartialData data = Marshal::from(partials);
+      data.source = utu::PartialData::Source({std::filesystem::canonical(sourcePath), {}});
+
+      if (outputPath.asString() == "-") {
+        utu::PartialWriter::write(data, std::cout);
+      } else {
+        std::ofstream os(outputPath.asString(), std::ios::binary);
+        utu::PartialWriter::write(data, os);
       }
+    }
+
+    if (!quietOutput) {
+      std::cout << "Wrote: " << outputPath << std::endl;
     }
   }
 
@@ -216,20 +226,24 @@ int SynthCommand(Args& args)
 
   bool quietOutput = args["--quiet"].asBool();
 
+  Loris::PartialList partials;
   std::optional<utu::PartialData> data;
+
   if (partialPath == "-") {
     data = utu::PartialReader::read(std::cin);
+  } else if (std::filesystem::path(partialPath).extension() == ".sdif") {
+    Loris::SdifFile in(partialPath);
+    partials = in.partials();
   } else {
+    // assume JSON format
     std::ifstream is(partialPath, std::ios::binary);
     data = utu::PartialReader::read(is);
+    partials = Marshal::from(*data);
   }
 
   if (!quietOutput) {
-    std::cout << "Partials: " << data->partials.size() << std::endl;
+    std::cout << "Partials: " << partials.size() << std::endl;
   }
-
-  // convert into native Loris representation
-  Loris::PartialList partials = Marshal::from(*data);
 
   std::optional<double> pitchShift = vtod(args["--pitch-shift"]);
   if (pitchShift && *pitchShift != 0) {
@@ -308,6 +322,44 @@ int SynthCommandListOutputDevices(Args& /* args */)
   }
 
   return 0;
+}
+
+//
+// convert command
+//
+
+int ConvertCommand(Args& args)
+{
+  // NOTE: Conversion is lossy, the markers stored in SDIF files are not carried
+  // over to the JSON format.
+
+  docopt::value inSdif = args["<in_sdif>"];
+  docopt::value outJson = args["<out_json>"];
+  if (inSdif && outJson) {
+    Loris::SdifFile in(inSdif.asString());
+
+    utu::PartialData data = Marshal::from(in.partials());
+    data.source = utu::PartialData::Source({std::filesystem::canonical(inSdif.asString()), {}});
+    std::ofstream os(outJson.asString(), std::ios::binary);
+    utu::PartialWriter::write(data, os);
+
+    return 0;
+  }
+
+  docopt::value inJson = args["<in_json>"];
+  docopt::value outSdif = args["<out_sdif>"];
+  if (inJson && outSdif) {
+    std::ifstream is(inJson.asString(), std::ios::binary);
+    std::optional<utu::PartialData> data = utu::PartialReader::read(is);
+
+    Loris::PartialList partials = Marshal::from(*data);
+    Loris::SdifFile::Export(outSdif.asString(), partials);
+
+    return 0;
+  }
+
+  std::cout << "error: expected input/output file paths for partial data\n";
+  return -1;
 }
 
 //
