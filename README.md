@@ -38,7 +38,7 @@ brew install cmake ninja automake autoconf m4 libtool
 once dependencies are installed building `utu` itself can be done as follows:
 
 ```
-git clone ssh://git@github.com/ngwese/utu.git
+git clone ssh://git@github.com/madronalabs/utu.git
 cd utu
 git submodule update --init --depth 1
 mkdir build
