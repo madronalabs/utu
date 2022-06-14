@@ -45,5 +45,5 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
-./bin/Debug/Debug/utu --help
+./bin/Debug/utu --help
 ```
