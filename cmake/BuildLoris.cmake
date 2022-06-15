@@ -40,9 +40,22 @@ endif()
 
 ExternalProject_Get_Property(loris SOURCE_DIR)
 
+#
+# added hack for Madrona Labs utu - can't find homebrew path during COMMAND 
+#
+if(APPLE)
+    include(GNUInstallDirs)
+    set (AUTOTOOLS_PATH "/opt/homebrew/bin/")
+elseif(WIN32)
+    set (AUTOTOOLS_PATH "")
+else()
+    set (AUTOTOOLS_PATH "")
+endif()
+
+
 ExternalProject_Add_Step(loris
     autoupdate
-    COMMAND autoupdate
+    COMMAND ${AUTOTOOLS_PATH}autoupdate
     DEPENDEES download
     WORKING_DIRECTORY ${SOURCE_DIR}
 )
@@ -54,13 +67,19 @@ ExternalProject_Add_Step(loris
     WORKING_DIRECTORY ${SOURCE_DIR}
 )
 
-ExternalProject_Add_Step(loris
-    bootstrap
-    COMMAND autoreconf --install
-    DEPENDEES autoupdate touch-changelog
-    DEPENDERS configure
-    WORKING_DIRECTORY ${SOURCE_DIR}
-)
+#
+# temporary hack for utu compile: this step still failed with 
+# Can't exec "aclocal": No such file or directory ...
+# But compiling still works for cmd-line and XCode if autotools are installed
+# already using homebrew. 
+#
+#ExternalProject_Add_Step(loris
+#    bootstrap
+#    COMMAND ${AUTOTOOLS_PATH}autoreconf --install
+#    DEPENDEES autoupdate touch-changelog
+#    DEPENDERS configure
+#    WORKING_DIRECTORY ${SOURCE_DIR}
+#)
 
 # HACK: create the install directories so that the target_include_directories function does not error during configure.
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/loris-prefix/include)  # avoid race condition
