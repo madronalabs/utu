@@ -3,6 +3,9 @@ include(FindPkgConfig)
 
 set(loris_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dep/loris)
 
+find_program(AUTOUPDATE_COMMAND NAMES autoupdate)
+find_program(AUTORECONF_COMMAND NAMES autoreconf)
+
 pkg_check_modules(FFTW fftw3 IMPORTED_TARGET)
 
 # The following attempts to work around old crusty autotools, specifically
@@ -42,7 +45,7 @@ ExternalProject_Get_Property(loris SOURCE_DIR)
 
 ExternalProject_Add_Step(loris
     autoupdate
-    COMMAND autoupdate
+    COMMAND ${AUTOUPDATE_COMMAND}
     DEPENDEES download
     WORKING_DIRECTORY ${SOURCE_DIR}
 )
@@ -56,7 +59,7 @@ ExternalProject_Add_Step(loris
 
 ExternalProject_Add_Step(loris
     bootstrap
-    COMMAND autoreconf --install
+    COMMAND ${AUTORECONF_COMMAND} --install
     DEPENDEES autoupdate touch-changelog
     DEPENDERS configure
     WORKING_DIRECTORY ${SOURCE_DIR}
