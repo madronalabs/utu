@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.15)
+
+cmake_minimum_required (VERSION 3.16)
+
+# set deployment target before first project invocation
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11" CACHE STRING "Minimum OS X deployment version")
+
+
 
 #
 # Project details

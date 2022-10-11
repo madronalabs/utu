@@ -7,6 +7,7 @@ set(exe_sources
     cmd/src/AudioFile.cpp
     cmd/src/AudioFile.h
     cmd/src/Marshal.cpp
+    cmd/src/Marshal.h
 		cmd/src/main.cpp
 		${lib_sources}
 )

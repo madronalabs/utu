@@ -6,13 +6,6 @@
 
 #include "Marshal.h"
 
-// TODO: move to Partial.h
-constexpr char kTimeName[] = "time";
-constexpr char kFrequencyName[] = "frequency";
-constexpr char kAmplitudeName[] = "amplitude";
-constexpr char kBandwidthName[] = "bandwidth";
-constexpr char kPhaseName[] = "phase";
-
 utu::PartialData Marshal::from(const Loris::PartialList& partials)
 {
   utu::PartialData result;

@@ -11,6 +11,12 @@
 #include <unordered_map>
 #include <vector>
 
+constexpr char kTimeName[] = "time";
+constexpr char kFrequencyName[] = "frequency";
+constexpr char kAmplitudeName[] = "amplitude";
+constexpr char kBandwidthName[] = "bandwidth";
+constexpr char kPhaseName[] = "phase";
+
 namespace utu
 {
 
